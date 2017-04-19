@@ -7,6 +7,7 @@ buildSnapshot = require './build_snapshot'
 { getWorkAuthorsAndSeries, getEditionGraphEntities } = require './get_entities'
 { getDocData, addSnapshot } = require './helpers'
 items_ = require '../items'
+user_ = __.require 'controllers', 'user/lib/user'
 
 fromDoc = (changedEntityDoc)->
   [ uri, type ] = getDocData changedEntityDoc
@@ -14,6 +15,7 @@ fromDoc = (changedEntityDoc)->
 
   refresh[type](uri)
   .then (updatedItems)->
+    _.log updatedItems, 'items updated after snapshot refresh'
     if updatedItems?.length > 0 then items_.db.bulk updatedItems
 
   .catch _.Error('refresh snapshot err')
@@ -55,14 +57,39 @@ refreshTypes = Object.keys refresh
 getUpdatedWorkItems = (uri, work, authors, series)->
   items_.byEntity uri
   .map (item)->
+    if item.lang then return item
+    else addUserLang item, work
+  .map (item)->
     { lang } = item
     updatedSnapshot = buildSnapshot.work lang, work, authors, series
-    if _.objDiff item.snapshot, updatedSnapshot
-      return addSnapshot item, updatedSnapshot
-    else
-      return null
+    # Temporarly always returning an updated item
+    # to be sure to update item.lang
+    return addSnapshot item, updatedSnapshot
+    # if _.objDiff item.snapshot, updatedSnapshot
+    #   return addSnapshot item, updatedSnapshot
+    # else
+    #   return null
   # Filter out items without snapshot change
   .filter _.identity
+
+addUserLang = (item, work)->
+  workLang = Object.keys work.labels
+  user_.byId item.owner
+  .then (user)->
+    userLang = _.shortLang(user.language)
+    if userLang in workLang
+      # _.log userLang, "using user lang (item: #{item._id})"
+      item.lang = userLang
+    else if 'en' in workLang
+      # _.warn 'en', "defaulting to English (item: #{item._id})"
+      item.lang = workLang[0]
+    else
+      pickedLang = workLang.filter(isShortLang)[0] or workLang[0]
+      _.warn pickedLang, "using first available lang found (item: #{item._id})"
+      item.lang = pickedLang
+    return item
+
+isShortLang = (str)-> str.length is 2
 
 getUpdatedEditionsItems = (uri, work, authors, series)->
   entities_.byClaim 'wdt:P629', uri, true, true

@@ -15,6 +15,11 @@ module.exports =
     # Keep snapshot fields that would be missing on the new snapshot
     # Known case: entity:image that aren't defined on works anymore
     item.snapshot = _.extend item.snapshot, updatedSnapshot
+
+    # Remove invalid entity:image
+    unless _.isExtendedUrl item.snapshot['entity:image']
+      delete item.snapshot['entity:image']
+
     return item
 
   getNames: (preferedLang, entities)->
