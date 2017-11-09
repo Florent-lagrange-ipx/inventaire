@@ -2,7 +2,7 @@ __ = require('config').universalPath
 _ = __.require 'builders', 'utils'
 error_ = __.require 'lib', 'error/error'
 items_ = __.require 'controllers', 'items/lib/items'
-user_ = __.require 'controllers', 'user/lib/user'
+bundleOwnersData = require './lib/bundle_owners_data'
 
 module.exports = (req, res)->
   { query } = req
@@ -29,15 +29,3 @@ module.exports = (req, res)->
   items_.publicByDate limit, offset, assertImage, reqUserId
   .then bundleOwnersData.bind(null, res, reqUserId)
   .catch error_.Handler(req, res)
-
-bundleOwnersData = (res, reqUserId, items)->
-  unless items?.length > 0
-    throw error_.new 'no item found', 404
-
-  users = getItemsOwners items
-  user_.getUsersByIds reqUserId, users
-  .then (users)-> res.json { items, users }
-
-getItemsOwners = (items)->
-  users = items.map (item)-> item.owner
-  return _.uniq users
