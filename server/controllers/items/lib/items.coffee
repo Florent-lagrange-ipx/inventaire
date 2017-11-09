@@ -142,6 +142,17 @@ module.exports = items_ =
     if image? and item.pictures.length is 0 then item.pictures = [ image ]
     return item
 
+  bundleOwnersData: (res, reqUserId, items)->
+    unless items?.length > 0
+      throw error_.new 'no item found', 404
+    users = getItemsOwners items
+    user_.getUsersByIds reqUserId, users
+    .then (users)-> res.json { items, users }
+
+getItemsOwners = (items)->
+  users = items.map (item)-> item.owner
+  return _.uniq users
+
 listingByEntities = (listing, uris, reqUserId)->
   keys = uris.map (uri)-> [ uri, listing ]
   db.viewByKeys 'byEntity', keys
