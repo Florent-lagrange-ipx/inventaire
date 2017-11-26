@@ -12,6 +12,11 @@ defaultEditionData = ->
     'wdt:P1476': [ randomString(4) ]
 
 module.exports = API =
+  createEntity: (label)->
+    authReq 'post', '/api/entities?action=create',
+      labels: { fr: label }
+      claims: { 'wdt:P31': [ 'wd:Q571' ] }
+
   createHuman: ->
     authReq 'post', '/api/entities?action=create',
       labels: { en: randomString(6) }

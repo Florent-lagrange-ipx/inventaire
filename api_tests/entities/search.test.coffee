@@ -4,6 +4,7 @@ _ = __.require 'builders', 'utils'
 should = require 'should'
 { Promise } = __.require 'lib', 'promises'
 { nonAuthReq, authReq, getUser, adminReq, undesiredErr } = require '../utils/utils'
+{ createEntity } = require '../fixtures/entities'
 randomString = __.require 'lib', './utils/random_string'
 
 describe 'entities:search', ->
@@ -45,9 +46,3 @@ describe 'entities:search', ->
     .catch undesiredErr(done)
 
     return
-
-createEntity = (label)->
-  authReq 'post', '/api/entities?action=create',
-    labels: { fr: label }
-    claims: { 'wdt:P31': [ 'wd:Q571' ] }
-  .get '_id'
