@@ -3,8 +3,6 @@ __ = CONFIG.universalPath
 _ = __.require 'builders', 'utils'
 should = require 'should'
 
-jiff = require 'jiff'
-
 Entity = __.require 'models', 'entity'
 entities_ = __.require 'controllers','entities/lib/entities'
 
