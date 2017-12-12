@@ -2,8 +2,9 @@ CONFIG = require 'config'
 __ = CONFIG.universalPath
 _ = __.require 'builders', 'utils'
 should = require 'should'
+{ Promise } = __.require 'lib', 'promises'
 { authReq, nonAuthReq, undesiredErr, undesiredRes } = require '../utils/utils'
-{ ensureEditionExists, createWorkWithAuthor } = require '../fixtures/entities'
+{ ensureEditionExists, createWorkWithAuthor, createEditionWithWorkAuthorAndSerie } = require '../fixtures/entities'
 endpointBase = '/api/entities?action=by-uris&uris='
 workWithAuthorPromise = createWorkWithAuthor()
 
@@ -132,6 +133,34 @@ describe 'entities:get:by-uris', ->
           err.statusCode.should.equal 400
           err.body.status_verbose.should.equal 'invalid relative: wdt:P31'
           done()
+      .catch undesiredErr(done)
+
+      return
+
+    it "should be able to include the works, authors, and series of an edition", (done)->
+      createEditionWithWorkAuthorAndSerie()
+      .get 'uri'
+      .then (editionUri)->
+        relatives = 'relatives=wdt:P50|wdt:P179|wdt:P629'
+        nonAuthReq 'get', "#{endpointBase}#{editionUri}&#{relatives}"
+        .then (res)->
+          edition = res.entities[editionUri]
+          edition.should.be.an.Object()
+
+          workUri = edition.claims['wdt:P629'][0]
+          work = res.entities[workUri]
+          work.should.be.an.Object()
+
+          authorUri = work.claims['wdt:P50'][0]
+          author = res.entities[authorUri]
+          author.should.be.an.Object()
+
+          serieUri = work.claims['wdt:P179'][0]
+          serie = res.entities[serieUri]
+          serie.should.be.an.Object()
+
+          done()
+
       .catch undesiredErr(done)
 
       return

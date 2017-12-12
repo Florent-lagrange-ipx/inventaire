@@ -6,7 +6,7 @@ should = require 'should'
 { authReq, getUser, adminReq, undesiredErr } = require '../utils/utils'
 { ensureEditionExists } = require '../fixtures/entities'
 randomString = __.require 'lib', './utils/random_string'
-{ createWork, createHuman, createSerie, createEditionFromWorks, createWorkWithAuthor } = require '../fixtures/entities'
+{ createWork, createHuman, addAuthor, addSerie, createEditionFromWorks, createWorkWithAuthor } = require '../fixtures/entities'
 
 describe 'items:snapshot', ->
   it 'should be updated when its local edition entity title changes', (done)->
@@ -292,20 +292,6 @@ describe 'items:snapshot', ->
   # TODO:
   # it 'should be updated when its remote author entity changes', (done)->
   # it 'should be updated when its remote work entity title changes', (done)->
-
-addAuthor = (subjectEntity)->
-  createHuman()
-  .tap addClaim('wdt:P50', subjectEntity)
-
-addSerie = (subjectEntity)->
-  createSerie()
-  .tap addClaim('wdt:P179', subjectEntity)
-
-addClaim = (property, subjectEntity)-> (entity)->
-  authReq 'put', '/api/entities?action=update-claim',
-    id: subjectEntity._id
-    property: property
-    'new-value': entity.uri
 
 updateLabel = (id, label)->
   authReq 'put', '/api/entities?action=update-label',
