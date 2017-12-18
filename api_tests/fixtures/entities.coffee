@@ -17,9 +17,9 @@ module.exports = API =
       labels: { fr: label }
       claims: { 'wdt:P31': [ 'wd:Q571' ] }
 
-  createHuman: ->
+  createHuman: (label=randomString(6))->
     authReq 'post', '/api/entities?action=create',
-      labels: { en: randomString(6) }
+      labels: { en: label }
       claims: { 'wdt:P31': [ 'wd:Q5' ] }
 
   createWork: ->
